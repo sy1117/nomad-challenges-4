@@ -24,8 +24,10 @@ export class PodcastsResolver {
   }
 
   @Mutation((returns) => CoreOutput)
-  createPodcast(@Args('input') createPodcastDto: CreatePodcastDto): CoreOutput {
-    return this.podcastsService.createPodcast(createPodcastDto);
+  async createPodcast(
+    @Args('input') createPodcastDto: CreatePodcastDto,
+  ): Promise<CoreOutput> {
+    return await this.podcastsService.createPodcast(createPodcastDto);
   }
 
   @Query((returns) => PodcastOutput)
@@ -39,7 +41,9 @@ export class PodcastsResolver {
   }
 
   @Mutation((returns) => CoreOutput)
-  updatePodcast(@Args('input') updatePodcastDto: UpdatePodcastDto): CoreOutput {
+  updatePodcast(
+    @Args('input') updatePodcastDto: UpdatePodcastDto,
+  ): Promise<CoreOutput> {
     return this.podcastsService.updatePodcast(updatePodcastDto);
   }
 }
@@ -49,14 +53,16 @@ export class EpisodeResolver {
   constructor(private readonly podcastService: PodcastsService) {}
 
   @Query((returns) => EpisodesOutput)
-  getEpisodes(
+  async getEpisodes(
     @Args('input') podcastSearchInput: PodcastSearchInput,
-  ): EpisodesOutput {
-    return this.podcastService.getEpisodes(podcastSearchInput.id);
+  ): Promise<EpisodesOutput> {
+    return await this.podcastService.getEpisodes(podcastSearchInput.id);
   }
 
   @Mutation((returns) => CoreOutput)
-  createEpisode(@Args('input') createEpisodeDto: CreateEpisodeDto): CoreOutput {
+  createEpisode(
+    @Args('input') createEpisodeDto: CreateEpisodeDto,
+  ): Promise<CoreOutput> {
     return this.podcastService.createEpisode(createEpisodeDto);
   }
 
@@ -68,7 +74,7 @@ export class EpisodeResolver {
   @Mutation((returns) => CoreOutput)
   deleteEpisode(
     @Args('input') episodesSearchInput: EpisodesSearchInput,
-  ): CoreOutput {
+  ): Promise<CoreOutput> {
     return this.podcastService.deleteEpisode(episodesSearchInput);
   }
 }
