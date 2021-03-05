@@ -1,9 +1,10 @@
+import 'reflect-metadata';
 import { Episode } from './episode.entity';
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, InputType } from '@nestjs/graphql';
 import { IsString, IsNumber } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-
-@ObjectType()
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+@InputType('PodcastInputType', { isAbstract: true })
+@ObjectType({ isAbstract: true })
 @Entity()
 export class Podcast {
   @PrimaryGeneratedColumn()
@@ -26,7 +27,7 @@ export class Podcast {
   @IsNumber()
   rating: number;
 
-  @Column()
-  @Field((_) => [Episode])
+  @OneToMany((type) => Episode, (episode: Episode) => episode.podcast)
+  @Field((_) => [Episode], { nullable: true })
   episodes: Episode[];
 }

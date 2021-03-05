@@ -19,10 +19,12 @@ export class PodcastsService {
   constructor(
     @Inject('PODCAST_REPOSITORY')
     private podcastRepository: Repository<Podcast>,
+    @Inject('EPISODE_REPOSITORY')
+    private episodeRepository: Repository<Episode>,
   ) {}
 
   async getAllPodcasts(): Promise<Podcast[]> {
-    return await this.podcastRepository.find();
+    return await this.podcastRepository.find({ relations: ['episodes'] });
   }
 
   async createPodcast({
@@ -33,13 +35,15 @@ export class PodcastsService {
     newPodcast.title = title;
     newPodcast.category = category;
     newPodcast.rating = 0;
-    newPodcast.episodes = [];
     await this.podcastRepository.save(newPodcast);
     return { ok: true, error: null };
   }
 
   async getPodcast(id: number): Promise<PodcastOutput> {
-    const podcast = await this.podcastRepository.findOne({ id });
+    const podcast = await this.podcastRepository.findOne(
+      { id },
+      { relations: ['episodes'] },
+    );
     if (!podcast) {
       return {
         ok: false,
@@ -53,12 +57,12 @@ export class PodcastsService {
   }
 
   async deletePodcast(id: number): Promise<CoreOutput> {
-    try {
-      const deletedPodcast = await this.podcastRepository.delete({ id });
-      return { ok: true, error: null };
-    } catch (error) {
-      return { ok: false, error: error.message };
+    const { ok, error, podcast } = await this.getPodcast(id);
+    if (!ok) {
+      return { ok, error };
     }
+    await this.podcastRepository.delete({ id });
+    return { ok: true, error: null };
   }
 
   async updatePodcast({ id, ...rest }: UpdatePodcastDto): Promise<CoreOutput> {
@@ -77,6 +81,7 @@ export class PodcastsService {
     if (!ok) {
       return { ok, error };
     }
+    console.log(podcast.episodes);
     return { ok: true, episodes: podcast.episodes };
   }
 
@@ -89,16 +94,13 @@ export class PodcastsService {
     if (!ok) {
       return { ok, error };
     }
-    const newEpisode: Episode = {
-      id: podcast.episodes.length + 1,
+    const newEpisode = await this.episodeRepository.create({
       title,
       category,
-    };
-    await this.updatePodcast({
-      id: podcastId,
-      episodes: [...podcast.episodes, newEpisode],
+      podcast,
     });
-
+    console.log(newEpisode);
+    await this.episodeRepository.save(newEpisode);
     return { ok: true };
   }
 
@@ -110,11 +112,19 @@ export class PodcastsService {
     if (!ok) {
       return { ok, error };
     }
-    this.updatePodcast({
-      id: podcastId,
-      episodes: podcast.episodes.filter((episode) => episode.id !== episodeId),
-    });
 
+    const deleteEpisode = await this.episodeRepository.findOne({
+      podcast,
+      id: episodeId,
+    });
+    if (!deleteEpisode) {
+      return {
+        ok: false,
+        error: `${episodeId} id episode doesn't exist!`,
+      };
+    }
+
+    await this.episodeRepository.delete(deleteEpisode);
     return { ok: true };
   }
 

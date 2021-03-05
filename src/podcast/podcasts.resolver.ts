@@ -24,10 +24,10 @@ export class PodcastsResolver {
   }
 
   @Mutation((returns) => CoreOutput)
-  async createPodcast(
+  createPodcast(
     @Args('input') createPodcastDto: CreatePodcastDto,
   ): Promise<CoreOutput> {
-    return await this.podcastsService.createPodcast(createPodcastDto);
+    return this.podcastsService.createPodcast(createPodcastDto);
   }
 
   @Query((returns) => PodcastOutput)

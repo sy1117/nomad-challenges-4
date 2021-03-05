@@ -1,10 +1,12 @@
-import { InputType, ObjectType, Field } from '@nestjs/graphql';
-import { Entity, Column } from 'typeorm';
-
-@ObjectType()
-@Entity()
+import 'reflect-metadata';
+import { ObjectType, Field, InputType } from '@nestjs/graphql';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Podcast } from './podcast.entity';
+@InputType('EpisodeInputType', { isAbstract: true })
+@ObjectType({ isAbstract: true })
+@Entity('episode')
 export class Episode {
-  @Column()
+  @PrimaryGeneratedColumn()
   @Field((_) => Number)
   id: number;
 
@@ -15,4 +17,8 @@ export class Episode {
   @Column()
   @Field((_) => String)
   category: string;
+
+  @ManyToOne(() => Podcast, (podcast) => podcast.episodes)
+  @Field((_) => Podcast, { nullable: true })
+  podcast: Podcast;
 }

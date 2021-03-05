@@ -5,7 +5,13 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { PodcastsModule } from './podcast/podcasts.module';
 
 @Module({
-  imports: [PodcastsModule, GraphQLModule.forRoot({ autoSchemaFile: true })],
+  imports: [
+    PodcastsModule,
+    GraphQLModule.forRoot({
+      include: [PodcastsModule],
+      autoSchemaFile: true,
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
